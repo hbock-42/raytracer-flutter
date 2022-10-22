@@ -1,0 +1,19 @@
+include: package:lint/analysis_options.yaml
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    avoid_relative_lib_imports: true
+    always_use_package_imports: false
+    prefer_relative_imports: true
+    avoid_multiple_declarations_per_line: false
+    use_super_parameters: true
+    use_key_in_widget_constructors: true
+
+analyzer:
+  exclude:
+    - '**.freezed.dart'
+    - '**.g.dart'
+
+  errors:
+    invalid_annotation_target: ignore
