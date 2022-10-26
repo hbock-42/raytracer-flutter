@@ -1,1 +1,1 @@
-const double hitThreshold = 0.1;
+const double hitThreshold = 0.01;

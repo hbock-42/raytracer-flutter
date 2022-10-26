@@ -5,7 +5,7 @@ import '../materials/mat.dart';
 abstract class IPrimitive {
   Mat get material;
 
-  Vector3 normal(Vector3 hitPoint);
+  Vector3 normalAtPoint(Vector3 hitPoint, Ray ray);
 
-  double distance(Ray ray);
+  double intersect(Ray ray);
 }

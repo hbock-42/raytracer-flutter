@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_processing/flutter_processing.dart';
-import 'package:vector_math/vector_math_64.dart' hide Colors;
+import 'package:vector_math/vector_math_64.dart' hide Colors, Sphere;
 
 import '../helpers/color_extensions.dart';
 import '../lights/i_light.dart';
 import '../primitives/i_primitive.dart';
-import '../shading/comput_shading.dart';
+import '../shading/compute_shading.dart';
 import 'camera.dart';
 import 'scene.dart';
 import 'view_plane.dart';
@@ -41,64 +41,31 @@ class SceneBuilder extends Sketch {
       for (int y = 0; y < scene.height; y++) {
         final windowToWorldPixelPosition =
             viewPlane.topLeft + Vector3(x / scene.width * viewPlane.width, -y / scene.height * viewPlane.height, 0);
-        final rayDir = (windowToWorldPixelPosition - camera.origin).normalized();
-        final ray = Ray.originDirection(camera.origin, rayDir);
+        final rayDir = (windowToWorldPixelPosition - camera.position).normalized();
+        final ray = Ray.originDirection(camera.position, rayDir);
         IPrimitive? targetHit;
         double minDist = double.infinity;
         for (int index = 0; index < primitives.length; index++) {
-          final dist = primitives[index].distance(ray);
+          final dist = primitives[index].intersect(ray);
           if (dist < minDist) {
             minDist = dist;
             targetHit = primitives[index];
           }
         }
-        Color hitColor = Colors.black;
+        Color initialColor = Colors.black;
+
         if (targetHit != null) {
-          for (int index = 0; index < lights.length; index++) {
-            final hitPoint = camera.origin + ray.direction * minDist;
-            final normal = targetHit.normal(hitPoint);
-            final lightDir = (hitPoint - lights[index].position).normalized();
-            final lightIntensityRate = lights[index].intensity / scene.totalLightsIntensity;
-
-            // check there is no object between hitPoint and light
-            final rayToLight = Ray.originDirection(hitPoint, -lightDir);
-            bool hit = false;
-            for (int i = 0; i < primitives.length; i++) {
-              hit = primitives[i].distance(rayToLight) < double.infinity;
-              if (hit) break;
-            }
-
-            // ambient
-            if (index == 0) {
-              final ambientColor = computeAmbientShading(material: targetHit.material);
-              hitColor = hitColor + ambientColor;
-            }
-            if (!hit) {
-              // diffuse
-              final Color diffuseColor = computeDiffuseShading(
-                lightDir: lightDir,
-                normal: normal,
-                material: targetHit.material,
-                lightIntensityRate: lightIntensityRate,
+          initialColor = initialColor +
+              computeShading(
+                initialColor: initialColor,
+                targetHit: targetHit,
+                hitDistance: minDist,
+                scene: scene,
+                ray: ray,
               );
-              hitColor = hitColor + diffuseColor;
-
-              // specular
-              final specularColor = computeSpecularShading(
-                material: targetHit.material,
-                normal: normal,
-                ray: ray.direction,
-                lightDir: lightDir,
-                light: lights[index],
-                lightIntensityRate: lightIntensityRate,
-              );
-              // print(specularColor);
-              hitColor += specularColor;
-            }
-
-            // print('${hitColor.red}|${hitColor.green}|${hitColor.blue}');
-          }
-          set(x: x, y: y, color: hitColor);
+          set(x: x, y: y, color: initialColor);
+        } else {
+          // print('$x:$y');
         }
       }
     }

@@ -19,7 +19,7 @@ class Sphere implements IPrimitive {
   });
 
   @override
-  double distance(Ray r) {
+  double intersect(Ray r) {
     final dx = r.direction.x;
     final dy = r.direction.y;
     final dz = r.direction.z;
@@ -46,7 +46,7 @@ class Sphere implements IPrimitive {
   }
 
   @override
-  Vector3 normal(Vector3 hitPoint) {
+  Vector3 normalAtPoint(Vector3 hitPoint, Ray ray) {
     return (hitPoint - center).normalized();
   }
 }

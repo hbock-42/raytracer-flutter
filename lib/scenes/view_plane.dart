@@ -1,14 +1,18 @@
 import 'package:vector_math/vector_math_64.dart';
 
+import 'camera.dart';
+
 class ViewPlane {
-  final Vector3 origin;
+  final Camera camera;
   final double width;
   final double height;
   final Vector3 topLeft;
+  final double distFromCamera;
 
   ViewPlane({
-    required this.origin,
+    required this.camera,
     required this.width,
     required this.height,
-  }) : topLeft = origin + Vector3(-width / 2, height / 2, 0);
+    required this.distFromCamera,
+  }) : topLeft = camera.position + camera.direction * distFromCamera + Vector3(-width / 2, height / 2, 0);
 }
